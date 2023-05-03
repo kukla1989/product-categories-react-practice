@@ -2,10 +2,10 @@
 import React, { useState } from 'react';
 import './App.scss';
 
+import classNames from 'classnames';
 import usersFromServer from './api/users';
 import categoriesFromServer from './api/categories';
 import productsFromServer from './api/products';
-import classNames from 'classnames';
 
 const products = productsFromServer.map((product) => {
   const category = categoriesFromServer.find(categoryFind => (
@@ -22,8 +22,9 @@ const products = productsFromServer.map((product) => {
 
 export const App = () => {
   const [currentUserId, setCurrentUserId] = useState(0);
+  const [query, setQuery] = useState('');
 
-  const visibleProducts = products.filter((product) => {
+  const productsFilteredByUser = products.filter((product) => {
     if (currentUserId === 0) {
       return true;
     }
@@ -32,6 +33,10 @@ export const App = () => {
   });
 
   const handleUserFilterById = userId => setCurrentUserId(userId);
+
+  const visibleProducts = productsFilteredByUser.filter(product => (
+    product.name.toLowerCase().includes(query.toLowerCase())
+  ));
 
   return (
     <div className="section">
@@ -87,7 +92,8 @@ export const App = () => {
                   type="text"
                   className="input"
                   placeholder="Search"
-                  value="qwe"
+                  value={query}
+                  onChange={event => setQuery(event.target.value)}
                 />
 
                 <span className="icon is-left">
@@ -96,11 +102,14 @@ export const App = () => {
 
                 <span className="icon is-right">
                   {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
-                  <button
-                    data-cy="ClearButton"
-                    type="button"
-                    className="delete"
-                  />
+                  {query && (
+                    <button
+                      data-cy="ClearButton"
+                      type="button"
+                      className="delete"
+                      onClick={() => setQuery('')}
+                    />
+                  )}
                 </span>
               </p>
             </div>
