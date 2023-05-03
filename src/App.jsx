@@ -33,6 +33,10 @@ export const App = () => {
   });
 
   const handleUserFilterById = userId => setCurrentUserId(userId);
+  const handleResetAllFilters = () => {
+    setQuery('');
+    setCurrentUserId(0);
+  };
 
   const visibleProducts = productsFilteredByUser.filter(product => (
     product.name.toLowerCase().includes(query.toLowerCase())
@@ -160,6 +164,7 @@ export const App = () => {
                 data-cy="ResetAllButton"
                 href="#/"
                 className="button is-link is-outlined is-fullwidth"
+                onClick={handleResetAllFilters}
               >
                 Reset all filters
               </a>
@@ -168,9 +173,11 @@ export const App = () => {
         </div>
 
         <div className="box table-container">
-          <p data-cy="NoMatchingMessage">
-            No products matching selected criteria
-          </p>
+          {visibleProducts.length === 0 && (
+            <p data-cy="NoMatchingMessage">
+              No results
+            </p>
+          )}
 
           <table
             data-cy="ProductTable"
