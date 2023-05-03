@@ -24,12 +24,16 @@ export const App = () => {
   const [selectedUserId, setCurrentUserId] = useState(0);
   const [query, setQuery] = useState('');
   const [selectedCategoriesIds, setSelectedCategoriesIds] = useState([0]);
+  const [sortBy, setSortBy] = useState('NONE');
+  const [sortDirection, setSortDirection] = useState('ASC');
 
   const handleUserFilterById = userId => setCurrentUserId(userId);
   const handleResetAllFilters = () => {
     setQuery('');
     setCurrentUserId(0);
     setSelectedCategoriesIds([0]);
+    setSortBy('NONE');
+    setSortDirection('ASC');
   };
 
   const setSelectedCategory = (categoryId) => {
@@ -50,11 +54,35 @@ export const App = () => {
     }
 
     setSelectedCategoriesIds((categoriesIds) => {
-      // const newCategoriesIds = categoriesIds.
       categoriesIds.splice(categoriesIds.indexOf(categoryId));
 
       return [...categoriesIds];
     });
+  };
+
+  const handleSortClick = (sortType) => {
+    if (sortBy === 'NONE') {
+      setSortBy(sortType);
+
+      return;
+    }
+
+    if (sortType === sortBy) {
+      setSortDirection(prevDirec => (prevDirec === 'ASC' ? 'DESC' : 'ASC'));
+
+      return;
+    }
+
+    setSortBy(sortType);
+    setSortDirection('ASC');
+  };
+
+  const getNameIconSort = (sortType) => {
+    if (sortType !== sortBy) {
+      return 'fa-sort';
+    }
+
+    return sortDirection === 'ASC' ? 'fa-sort-up' : 'fa-sort-down';
   };
 
   const productsFilteredByUser = products.filter((product) => {
@@ -74,6 +102,29 @@ export const App = () => {
       ? true
       : selectedCategoriesIds.includes(product.category.id)
   ));
+
+  visibleProducts.sort((productA, productB) => {
+    switch (sortBy) {
+      case 'ID':
+        return sortDirection === 'ASC'
+          ? productA.id - productB.id
+          : productB.id - productA.id;
+      case 'USER':
+        return sortDirection === 'ASC'
+          ? productA.user.name.localeCompare(productB.user.name)
+          : productB.user.name.localeCompare(productA.user.name);
+      case 'CATEGORY':
+        return sortDirection === 'ASC'
+          ? productA.category.title.localeCompare(productB.category.title)
+          : productB.category.title.localeCompare(productA.category.title);
+      case 'PRODUCT':
+        return sortDirection === 'ASC'
+          ? productA.name.localeCompare(productB.name)
+          : productB.name.localeCompare(productA.name);
+      default:
+        return 0;
+    }
+  });
 
   return (
     <div className="section">
@@ -248,9 +299,12 @@ export const App = () => {
                       <span className="is-flex is-flex-wrap-nowrap">
                         ID
 
-                        <a href="#/">
+                        <a href="#/" onClick={() => handleSortClick('ID')}>
                           <span className="icon">
-                            <i data-cy="SortIcon" className="fas fa-sort" />
+                            <i
+                              data-cy="SortIcon"
+                              className={`fas ${getNameIconSort('ID')}`}
+                            />
                           </span>
                         </a>
                       </span>
@@ -260,9 +314,12 @@ export const App = () => {
                       <span className="is-flex is-flex-wrap-nowrap">
                         Product
 
-                        <a href="#/">
+                        <a href="#/" onClick={() => handleSortClick('PRODUCT')}>
                           <span className="icon">
-                            <i data-cy="SortIcon" className="fas fa-sort-down" />
+                            <i
+                              data-cy="SortIcon"
+                              className={`fas ${getNameIconSort('PRODUCT')}`}
+                            />
                           </span>
                         </a>
                       </span>
@@ -272,9 +329,15 @@ export const App = () => {
                       <span className="is-flex is-flex-wrap-nowrap">
                         Category
 
-                        <a href="#/">
+                        <a
+                          href="#/"
+                          onClick={() => handleSortClick('CATEGORY')}
+                        >
                           <span className="icon">
-                            <i data-cy="SortIcon" className="fas fa-sort-up" />
+                            <i
+                              data-cy="SortIcon"
+                              className={`fas ${getNameIconSort('CATEGORY')}`}
+                            />
                           </span>
                         </a>
                       </span>
@@ -284,9 +347,12 @@ export const App = () => {
                       <span className="is-flex is-flex-wrap-nowrap">
                         User
 
-                        <a href="#/">
+                        <a href="#/" onClick={() => handleSortClick('USER')}>
                           <span className="icon">
-                            <i data-cy="SortIcon" className="fas fa-sort" />
+                            <i
+                              data-cy="SortIcon"
+                              className={`fas ${getNameIconSort('USER')}`}
+                            />
                           </span>
                         </a>
                       </span>
@@ -295,7 +361,6 @@ export const App = () => {
                 </thead>
 
                 <tbody>
-
                   {
                   visibleProducts.map((product) => {
                     const { id, name } = product;
@@ -303,7 +368,10 @@ export const App = () => {
 
                     return (
                       <tr data-cy="Product" key={id}>
-                        <td className="has-text-weight-bold" data-cy="ProductId">
+                        <td
+                          className="has-text-weight-bold"
+                          data-cy="ProductId"
+                        >
                           {product.id}
                         </td>
 
